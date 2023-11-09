@@ -1,12 +1,12 @@
-// player.h
+// character.h
 #pragma once
 
-class Player {
+class Character {
 public:
-    Player(float size, float x, float y);
-    void draw();
+    Character(float size, float x, float y);
     void moveUp();
     void moveDown();
+    void draw();
 
 private:
     float size;
