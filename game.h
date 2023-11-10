@@ -1,9 +1,10 @@
 // game.h
 #pragma once
 
-#include <vector>
 #include "character.h"
 #include "hexagon.h"
+#include <GLFW/glfw3.h>
+#include <vector>
 
 class Game {
 public:
@@ -11,6 +12,7 @@ public:
     void initialize();
     void update();
     void render();
+    void reset();
 
 private:
     Character character;
@@ -18,5 +20,8 @@ private:
     GLFWwindow* window; // Store the GLFW window as a class member
 
     void generateMap();
+    void updateMap();
     bool randomBoolean();
+    bool isGameOver;
+    int colCounter;
 };
