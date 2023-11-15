@@ -13,6 +13,7 @@ public:
     void update();
     void render();
     void reset();
+    ~Game();
 
 private:
     Character character;
@@ -22,6 +23,8 @@ private:
     void generateMap();
     void updateMap();
     bool randomBoolean();
+    void initOpenAL();
+    void cleanupOpenAL();
     bool isGameOver;
     int colCounter;
 };

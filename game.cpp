@@ -2,14 +2,25 @@
 #include "game.h"
 #include "constants.h"
 #include <random>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alut.h>
 #include <iostream>
 using namespace std;
 
 Game::Game(GLFWwindow* window) : window(window), isGameOver(false), colCounter(1), character(CHAR_SIZE, 1.0f - (CHAR_SIZE * 2), 0.0f) {}
 
+// Add a member variable for the OpenAL source
+ALuint backgroundMusicSource;
+
 void Game::initialize() {
     // Initialize hexagons (generate the map here)
     generateMap();
+    initOpenAL();
+}
+
+Game::~Game() {
+    cleanupOpenAL();
 }
 
 void Game::update() {
@@ -41,6 +52,7 @@ void Game::update() {
                 // Check if it's a black hexagon
                 if (hexagon.isBlackHexagon()) {
                     cout << "Game over"; // Remove the include and std when removing this line
+                    alSourceStop(backgroundMusicSource);
                     isGameOver = true;
                 }
             }
@@ -85,6 +97,8 @@ void Game::reset() {
 
     colCounter = 1;
 
+    alSourcePlay(backgroundMusicSource);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Reset player and any other game elements as needed
@@ -107,11 +121,7 @@ void Game::generateMap() {
         for (int row = 1; row < numHexagonsY + 1; row++) {
             float yPos = row * HEX_SIZE * 1.8f - 1.08f;
             if (col % 2 == 0) { yPos = yPos - (HEX_SIZE * 0.9f); }
-
-            //bool isBlack = (col < numHexagonsX - 11) ? randomBoolean() : false;
-            bool isBlack = randomBoolean();
-
-            hexagons.insert(hexagons.begin(), Hexagon(HEX_SIZE, isBlack, xPos, yPos));
+            hexagons.insert(hexagons.begin(), Hexagon(HEX_SIZE, false, xPos, yPos));
         }
     }
 }
@@ -158,4 +168,46 @@ bool Game::randomBoolean() {
     static std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
     float generatedNum = distribution(generator);
     return (generatedNum > 0.75f) ? true : false;
+}
+
+
+// Function to initialize OpenAL and load background music
+void Game::initOpenAL() {
+    ALCdevice* device = alcOpenDevice(NULL);
+    if (!device) {
+        std::cerr << "Failed to initialize OpenAL device\n";
+        return;
+    }
+
+    ALCcontext* context = alcCreateContext(device, NULL);
+    if (!context) {
+        std::cerr << "Failed to create OpenAL context\n";
+        alcCloseDevice(device);
+        return;
+    }
+
+    alcMakeContextCurrent(context);
+
+    // Generate a source
+    alGenSources(1, &backgroundMusicSource);
+
+    // Load your MP3 file and set it as the background music
+    ALuint buffer = alutCreateBufferFromFile("maze.ogg");
+    alSourcei(backgroundMusicSource, AL_BUFFER, buffer);
+
+    // Set the source to loop
+    alSourcei(backgroundMusicSource, AL_LOOPING, AL_TRUE);
+
+    // Play the background music
+    alSourcePlay(backgroundMusicSource);
+}
+
+// Function to clean up OpenAL resources
+void Game::cleanupOpenAL() {
+    alDeleteSources(1, &backgroundMusicSource);
+    ALCcontext* context = alcGetCurrentContext();
+    ALCdevice* device = alcGetContextsDevice(context);
+    alcMakeContextCurrent(NULL);
+    alcDestroyContext(context);
+    alcCloseDevice(device);
 }
