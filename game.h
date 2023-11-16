@@ -8,7 +8,7 @@
 
 class Game {
 public:
-    Game(GLFWwindow* window); // Add the GLFWwindow as a parameter to the constructor
+    Game(GLFWwindow* window);
     void initialize();
     void update();
     void render();
@@ -18,7 +18,7 @@ public:
 private:
     Character character;
     std::vector<Hexagon> hexagons;
-    GLFWwindow* window; // Store the GLFW window as a class member
+    GLFWwindow* window;
 
     void generateMap();
     void updateMap();

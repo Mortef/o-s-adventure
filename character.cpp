@@ -7,41 +7,15 @@
 
 Character::Character(float size, float x, float y) : size(size), x(x), y(y) {}
 
-float Character::getSize() const {
-    return size;
-}
+float Character::getSize() const { return size; }
+float Character::getX() const { return x; }
+float Character::getY() const { return y; }
 
-float Character::getX() const {
-    return x;
-}
-float Character::getY() const {
-    return y;
-}
-
-void Character::moveUp() {
-    // Check border of the map
-    if (y < (1.0f - CHAR_SIZE)) {
-        y += CHAR_SPEED;
-    }
-}
-
-void Character::moveDown() {
-    if (y >  (CHAR_SIZE - 1.0f)) {
-        y -= CHAR_SPEED;
-    }
-}
-
-void Character::moveRight() {
-    if (x < (1.0f - CHAR_SIZE) && ALL_DIRECTIONS) {
-        x += CHAR_SPEED;
-    }
-}
-
-void Character::moveLeft() {
-    if (x > (CHAR_SIZE - 1.0f) && ALL_DIRECTIONS) {
-        x -= CHAR_SPEED;
-    }
-}
+// Only moves until the border of the map
+void Character::moveUp() { if (y < (1.0f - CHAR_SIZE)) { y += CHAR_SPEED; } }
+void Character::moveDown() { if (y >  (CHAR_SIZE - 1.0f)) { y -= CHAR_SPEED; } }
+void Character::moveRight() { if (x < (1.0f - CHAR_SIZE) && ALL_DIRECTIONS) { x += CHAR_SPEED + MAP_SPEED; } }
+void Character::moveLeft() { if (x > (CHAR_SIZE - 1.0f) && ALL_DIRECTIONS) { x -= CHAR_SPEED; } }
 
 void Character::draw() {
     // Draw the character (circle)
@@ -61,7 +35,7 @@ void Character::draw() {
     glEnd();
 
     // On top of the black circle, another smaller grey circle is drawn
-    glColor3f(0.9f, 1.0f, 1.0f); // Light grey color
+    glColor3f(0.9f, 1.0f, 1.0f); // Light blue color
     glBegin(GL_TRIANGLE_FAN);
     for (int i = 0; i < 360; i++) {
         float radian = static_cast<float>(i * (M_PI / 180));

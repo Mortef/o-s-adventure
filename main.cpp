@@ -18,7 +18,7 @@ int main() {
 
     glfwMakeContextCurrent(window);
 
-    Game game(window); // Pass the GLFW window to the Game constructor
+    Game game(window);
     game.initialize();
 
     while (!glfwWindowShouldClose(window)) {

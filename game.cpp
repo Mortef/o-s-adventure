@@ -6,7 +6,6 @@
 #include <AL/alc.h>
 #include <AL/alut.h>
 #include <iostream>
-using namespace std;
 
 Game::Game(GLFWwindow* window) : window(window), isGameOver(false), colCounter(1), character(CHAR_SIZE, 1.0f - (CHAR_SIZE * 2), 0.0f) {}
 
@@ -14,7 +13,6 @@ Game::Game(GLFWwindow* window) : window(window), isGameOver(false), colCounter(1
 ALuint backgroundMusicSource;
 
 void Game::initialize() {
-    // Initialize hexagons (generate the map here)
     generateMap();
     initOpenAL();
 }
@@ -25,33 +23,26 @@ Game::~Game() {
 
 void Game::update() {
     if (!isGameOver) {
-        // Update player movement based on input
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-            character.moveUp();
-        }
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-            character.moveDown();
-        }
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            character.moveRight();
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-            character.moveLeft();
-        }
+        // Update character movement based on input
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) { character.moveUp(); }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) { character.moveDown(); }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) { character.moveRight(); }
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) { character.moveLeft(); }
 
         // Update the map's movement
         updateMap();
 
         // Check for collisions with hexagons
         for (const Hexagon& hexagon : hexagons) {
-            // Calculate the distance between the player and the center of the hexagon
+            // Calculate the distance between the character and the center of the hexagon
             float distance = sqrt(pow(character.getX() - hexagon.getX(), 2) + pow(character.getY() - hexagon.getY(), 2));
 
-            // If the distance is less than the sum of player and hexagon radii, they overlap
-            if (distance < character.getSize() + (hexagon.getSize() * 0.25f)) {
+            // If the distance is less than the sum of character and hexagon radii, they overlap
+            // But a certain percentage of the character's body is allowed inside the holes
+            float charSizeInside = (hexagon.getSize() * 2 * CHAR_MAX_PERCENTAGE_IN_HOLE);
+            if (distance < character.getSize() + hexagon.getSize() - charSizeInside) {
                 // Check if it's a black hexagon
                 if (hexagon.isBlackHexagon()) {
-                    cout << "Game over"; // Remove the include and std when removing this line
                     alSourceStop(backgroundMusicSource);
                     isGameOver = true;
                 }
@@ -70,7 +61,7 @@ void Game::render() {
             hexagon.draw();
         }
 
-        // Draw the player
+        // Draw the character
         character.draw();
 
         glfwPollEvents();
@@ -101,7 +92,7 @@ void Game::reset() {
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Reset player and any other game elements as needed
+    // Reset character and any other game elements as needed
     character = Character(CHAR_SIZE, 1.0f - (CHAR_SIZE * 2), 0.0f);
 
     // Regenerate the map or reinitialize any other game elements
@@ -131,17 +122,7 @@ void Game::updateMap() {
     for (Hexagon& hexagon : hexagons) {hexagon.setX(hexagon.getX() + MAP_SPEED);}
 
     // Check if the rightmost column is out of the screen and remove it
-    if (!hexagons.empty() && hexagons.back().getX() > 1.06f) {
-        hexagons.pop_back();
-    }
-
-
-    cout << "Hexagons size: ";
-    cout << hexagons.size();
-    cout << '\n';
-    cout << "Hexagon first column x position: ";
-    cout << hexagons.front().getX();
-    cout << '\n';
+    if (!hexagons.empty() && hexagons.back().getX() > 1.06f) { hexagons.pop_back(); }
 
     // Check if a new column should be added on the left
     if (hexagons.front().getX() > (HEX_SIZE * 2 - 1.12f)) {
@@ -153,10 +134,7 @@ void Game::updateMap() {
         for (int row = 1; row < numHexagonsY + 1; row++) {
             float yPos = row * HEX_SIZE * 1.8f - 1.08f;
             if (colCounter % 2 == 0) { yPos = yPos - (HEX_SIZE * 0.9f); }
-
-            //bool isBlack = (col < numHexagonsX - 11) ? randomBoolean() : false;
             bool isBlack = randomBoolean();
-
             hexagons.insert(hexagons.begin(), Hexagon(HEX_SIZE, isBlack, xPos, yPos));
         }
     }
